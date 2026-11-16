@@ -14,10 +14,16 @@ Route::get('/kategori', function () {
     );
 })->name('kategori');
 
-
-Route::apiResource('buku', BukuController::class);
-
 Route::name('api.')->group(function () {
+    Route::get('/kategori', function () {
+        return response()->json(
+            Kategori::query()
+                ->select('id', 'nama')
+                ->orderBy('nama')
+                ->get()
+        );
+    })->name('kategori');
+
     Route::apiResource('buku', BukuController::class);
 });
 
