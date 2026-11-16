@@ -287,6 +287,12 @@
         </div>
 
         <div>
+            {{-- Tombol Tambah Buku hanya muncul untuk Admin & Petugas --}}
+            @can('kelola-buku')
+                <a href="{{ route('buku.create') }}" class="btn btn-primary me-2">
+                    + Tambah Buku
+                </a>
+            @endcan
 
             <button type="button" class="btn btn-refresh" id="btnRefresh">
                 ↻ Muat Ulang
