@@ -5,6 +5,7 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 use App\Models\User;
+use Illuminate\Support\Facades\URL;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -29,5 +30,11 @@ class AppServiceProvider extends ServiceProvider
         if ($this->app->environment('production')) {
         \URL::forceScheme('https');
         }
+
+    {
+        if (config('app.env') !== 'local' || isset($_SERVER['VERCEL'])) {
+            URL::forceScheme('https');
+        }
+    }
     }
 }
