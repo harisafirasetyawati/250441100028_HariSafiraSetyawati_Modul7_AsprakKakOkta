@@ -7,6 +7,14 @@ use App\Http\Controllers\PeminjamanController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+
+Route::match(['get', 'post'], '/logout', function (Request $request) {
+    Auth::logout();
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+    return redirect('/login');
+})->name('logout');
 
 // Redirect Halaman Utama ke Dashboard
 Route::get('/', function () {
