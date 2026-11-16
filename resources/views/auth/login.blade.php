@@ -84,7 +84,7 @@
 
     <div class="login-card-container">
         <h1 class="login-title">Selamat Datang</h1>
-        <p class="login-subtitle">Masuk ke Sistem Perpustakaan</p>
+        <p class="login-subtitle">Masuk ke Sistem Perpustakaan 250441100028</p>
 
         <!-- Session Status -->
         <x-auth-session-status class="mb-4" :status="session('status')" />
