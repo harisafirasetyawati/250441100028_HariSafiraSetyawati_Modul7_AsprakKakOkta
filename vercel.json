@@ -11,7 +11,7 @@
   "env": {
     "APP_ENV": "production",
     "APP_DEBUG": "false",
-    "APP_KEY": "isi-dengan-key-dari-php-artisan-key:generate --show",
+    "APP_KEY": "base64:jb+IkK5tc+vGzUupHpkamRZ9SzwvhkwyJppc6+PBwec=",
     "APP_CONFIG_CACHE": "/tmp/config.cache",
     "APP_EVENTS_CACHE": "/tmp/events.cache",
     "APP_PACKAGES_CACHE": "/tmp/packages.cache",
