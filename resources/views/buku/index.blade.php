@@ -287,12 +287,6 @@
         </div>
 
         <div>
-            {{-- Tombol Tambah Buku hanya muncul untuk Admin & Petugas --}}
-            @can('kelola-buku')
-                <a href="{{ route('buku.create') }}" class="btn btn-primary me-2">
-                    + Tambah Buku
-                </a>
-            @endcan
 
             <button type="button" class="btn btn-refresh" id="btnRefresh">
                 ↻ Muat Ulang
@@ -390,37 +384,15 @@
                     </tr>
                 </thead>
                 
-                <!-- <tbody id="daftarBuku">
-                    @foreach($buku as $item)
-                        <tr>
-                            <td>{{ $item->id }}</td>
-                            <td>{{ $item->kategori->nama ?? '-' }}</td> -->
-                            
-                            <!-- {{-- KODE CELAH A1 (RENTAN XSS): Menggunakan {!! !!} tanpa escaping --}}
-                            <td>{!! $item->judul !!}</td> -->
-                            
-                            <!-- <td>{{ $item->judul }}</td>
-
-                            <td>{{ $item->penulis }}</td>
-                            <td>{{ $item->tahun_terbit }}</td>
-                            <td>
-                                {{-- Tombol aksi opsional --}}
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div> -->
-
         <tbody id="daftarBuku">
     @foreach($buku as $item)
         <tr>
             <td>{{ $item->id }}</td>
             <td>{{ $item->kategori->nama ?? '-' }}</td>
             
-            {{-- Perbaikan A1: Menggunakan Blade Escaping {{ }} --}}
+            {{-- Perbaikan A1 (Aman XSS): Menggunakan {{ }} untuk escaping otomatis --}}
             <td>{{ $item->judul }}</td>
-
+            
             <td>{{ $item->penulis }}</td>
             <td>{{ $item->tahun_terbit }}</td>
             <td>
@@ -428,24 +400,15 @@
                 <form action="{{ route('buku.destroy', $item->id) }}" method="POST" style="display:inline;">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" onclick="return confirm('Yakin hapus?')">Hapus</button>
+                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Yakin hapus?')">
+                        Hapus
+                    </button>
                 </form>
             </td>
         </tr>
-    @endforeach
+  @endforeach
 </tbody>
-
-
-                <tbody id="daftarBuku">
-                    <tr>
-                        <td colspan="6" class="status-message">
-                            Memuat data buku...
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
+</table>
 </div>
 
 <script>

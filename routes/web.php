@@ -25,7 +25,7 @@ Route::middleware(['auth'])->group(function () {
         return view('admin.dashboard');
     })->name('dashboard.admin');
 
-    // 2. Route Pencarian Buku (Soal 2b: Query Binding SQLi)[cite: 8]
+    // 2. Route Pencarian Buku (Soal Nomor 1, A2)
     Route::get('/buku-cari', function (Request $request) {
         $judul = $request->query('judul');
         $buku = DB::select("SELECT * FROM bukus WHERE judul = ?", [$judul]);
@@ -41,7 +41,13 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/buku', [BukuController::class, 'store'])->name('buku.store');
         Route::get('/buku/{buku}/edit', [BukuController::class, 'edit'])->name('buku.edit');
         Route::put('/buku/{buku}', [BukuController::class, 'update'])->name('buku.update');
+
+    // Rute penghapusan menggunakan GET sehingga bisa dipicu lewat tautan luar
+//     Route::get('/buku/{buku}/hapus', [BukuController::class, 'destroy'])->name('buku.hapus.get');
+// });
         Route::delete('/buku/{buku}', [BukuController::class, 'destroy'])->name('buku.destroy');
+        // // ROUTE CELAH A3: Menghapus buku via GET
+        // Route::get('/buku/{buku}/hapus', [BukuController::class, 'destroy']);
     });
 
     // 5. Route Show Buku (Harus ditaruh di bawah /buku/create agar tidak bentrok)
