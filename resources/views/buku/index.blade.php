@@ -411,13 +411,13 @@
                                             Ubah
                                         </button>
 
-                                        <form action="{{ route('buku.destroy', $item->id) }}" method="POST" style="display:inline;">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-delete" onclick="return confirm('Yakin hapus buku ini?')">
-                                                Hapus
-                                            </button>
-                                        </form>
+                                        <button
+                                            type="button"
+                                            class="btn btn-delete"
+                                            onclick='hapusBuku(@json($item))'
+                                        >
+                                            Hapus
+                                        </button>
                                     @endif
                                 </div>
                             </td>
@@ -434,11 +434,7 @@
 </div>
 
 <script>
-    const libraryPage = document.querySelector('.library-page');
-    const isUserSiswa = libraryPage ? libraryPage.dataset.isSiswa === 'true' : false;
-
     const formBuku = document.getElementById('formBuku');
-    const daftarBuku = document.getElementById('daftarBuku');
     const pesanForm = document.getElementById('pesanForm');
     const pesanTabel = document.getElementById('pesanTabel');
     const btnSimpan = document.getElementById('btnSimpan');
@@ -448,7 +444,6 @@
     const pilihanKategori = document.getElementById('kategori_id');
 
     let idBukuDiubah = null;
-    let daftarKategori = [];
 
     function tampilkanPesan(elemen, pesan, tipe) {
         if (!elemen) return;
@@ -461,12 +456,6 @@
         if (!elemen) return;
         elemen.textContent = '';
         elemen.className = 'alert';
-    }
-
-    function buatSel(nilai) {
-        const td = document.createElement('td');
-        td.textContent = nilai ?? '-';
-        return td;
     }
 
     async function bacaRespons(response) {
@@ -515,8 +504,6 @@
             ? hasil
             : (Array.isArray(hasil.data) ? hasil.data : []);
 
-        daftarKategori = kategori;
-
         pilihanKategori.replaceChildren();
 
         const opsiAwal = document.createElement('option');
@@ -541,102 +528,6 @@
         });
 
         pilihanKategori.disabled = kategori.length === 0;
-    }
-
-    async function muatBuku() {
-        try {
-            const response = await fetch('/api/buku', {
-                headers: {
-                    'Accept': 'application/json'
-                },
-                cache: 'no-store'
-            });
-
-            if (!response.ok) return;
-
-            const hasil = await bacaRespons(response);
-
-            const buku = Array.isArray(hasil)
-                ? hasil
-                : (Array.isArray(hasil.data) ? hasil.data : []);
-
-            daftarBuku.replaceChildren();
-
-            if (buku.length === 0) {
-                const barisKosong = document.createElement('tr');
-                const selKosong = buatSel('Belum ada data buku.');
-                selKosong.colSpan = 6;
-                selKosong.className = 'status-message';
-                barisKosong.appendChild(selKosong);
-                daftarBuku.appendChild(barisKosong);
-                return;
-            }
-
-            buku.forEach(item => {
-                const tr = document.createElement('tr');
-
-                tr.appendChild(buatSel(item.id));
-
-                const tdKategori = document.createElement('td');
-                const badge = document.createElement('span');
-                badge.className = 'category-badge';
-
-                const namaKategori =
-                    typeof item.kategori === 'object'
-                        ? item.kategori?.nama
-                        : item.kategori;
-
-                badge.textContent = namaKategori
-                    ?? daftarKategori.find(
-                        kategori =>
-                            Number(kategori.id) === Number(item.kategori_id)
-                    )?.nama
-                    ?? '-';
-
-                tdKategori.appendChild(badge);
-                tr.appendChild(tdKategori);
-
-                tr.appendChild(buatSel(item.judul));
-                tr.appendChild(buatSel(item.penulis));
-                tr.appendChild(buatSel(item.tahun_terbit ?? item.tahun));
-
-                const tdAksi = document.createElement('td');
-                const grup = document.createElement('div');
-                grup.className = 'action-buttons';
-
-                const btnDetail = document.createElement('button');
-                btnDetail.type = 'button';
-                btnDetail.className = 'btn btn-detail';
-                btnDetail.textContent = 'Detail';
-                btnDetail.addEventListener('click', () => {
-                    window.location.assign(`/buku/${encodeURIComponent(item.id)}`);
-                });
-                grup.appendChild(btnDetail);
-
-                if (!isUserSiswa) {
-                    const btnEdit = document.createElement('button');
-                    btnEdit.type = 'button';
-                    btnEdit.className = 'btn btn-edit';
-                    btnEdit.textContent = 'Ubah';
-                    btnEdit.addEventListener('click', () => pilihBuku(item));
-
-                    const btnHapus = document.createElement('button');
-                    btnHapus.type = 'button';
-                    btnHapus.className = 'btn btn-delete';
-                    btnHapus.textContent = 'Hapus';
-                    btnHapus.addEventListener('click', () => hapusBuku(item));
-
-                    grup.append(btnEdit, btnHapus);
-                }
-
-                tdAksi.appendChild(grup);
-                tr.appendChild(tdAksi);
-
-                daftarBuku.appendChild(tr);
-            });
-        } catch (error) {
-            // Biarkan tabel bawaan Blade tetap tampil jika endpoint API tidak tersedia
-        }
     }
 
     function pilihBuku(item) {
@@ -712,19 +603,7 @@
 
                 await bacaRespons(response);
 
-                formBuku.reset();
-                idBukuDiubah = null;
-                judulForm.textContent = 'Tambah Buku Baru';
-
-                tampilkanPesan(
-                    pesanForm,
-                    sedangMengubah
-                        ? 'Data buku berhasil diperbarui.'
-                        : 'Buku berhasil ditambahkan.',
-                    'success'
-                );
-
-                await muatBuku();
+                window.location.reload();
             } catch (error) {
                 tampilkanPesan(pesanForm, error.message, 'error');
             } finally {
@@ -769,53 +648,19 @@
 
             await bacaRespons(response);
 
-            if (formBuku && String(idBukuDiubah) === String(item.id)) {
-                formBuku.reset();
-                idBukuDiubah = null;
-                judulForm.textContent = 'Tambah Buku Baru';
-                if (btnSimpan) btnSimpan.textContent = '+ Tambah Buku';
-            }
-
-            tampilkanPesan(
-                pesanTabel,
-                'Buku berhasil dihapus.',
-                'success'
-            );
-
-            await muatBuku();
+            window.location.reload();
         } catch (error) {
             tampilkanPesan(pesanTabel, error.message, 'error');
         }
     }
 
-    btnRefresh.addEventListener('click', async function() {
-        sembunyikanPesan(pesanTabel);
-        sembunyikanPesan(pesanForm);
-
-        try {
-            await muatKategori();
-            await muatBuku();
-
-            tampilkanPesan(
-                pesanTabel,
-                'Data buku dan kategori berhasil dimuat ulang.',
-                'success'
-            );
-        } catch (error) {
-            if (pesanForm) {
-                tampilkanPesan(
-                    pesanForm,
-                    'Gagal memuat kategori: ' + error.message,
-                    'error'
-                );
-            }
-        }
+    btnRefresh.addEventListener('click', function() {
+        window.location.reload();
     });
 
     async function inisialisasi() {
         try {
             await muatKategori();
-            await muatBuku();
         } catch (error) {
             if (pilihanKategori) {
                 pilihanKategori.disabled = true;
