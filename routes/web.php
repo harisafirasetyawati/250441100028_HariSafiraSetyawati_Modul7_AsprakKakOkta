@@ -46,14 +46,14 @@ Route::middleware(['auth'])->group(function () {
     // 4. Route Kelola Buku (Soal 3: Diproteksi Gate kelola-buku)
     Route::middleware(['can:kelola-buku'])->group(function () {
         Route::get('/buku/create', [BukuController::class, 'create'])->name('buku.create');
-        Route::post('/buku', [BukuController::class, 'store'])->name('buku.store');
+        Route::post('/buku', [\App\Http\Controllers\Api\BukuController::class, 'store'])->name('buku.store');
         Route::get('/buku/{buku}/edit', [BukuController::class, 'edit'])->name('buku.edit');
-        Route::put('/buku/{buku}', [BukuController::class, 'update'])->name('buku.update');
+        Route::put('/buku/{buku}', [\App\Http\Controllers\Api\BukuController::class, 'update'])->name('buku.update');
 
     // Rute penghapusan menggunakan GET sehingga bisa dipicu lewat tautan luar
 //     Route::get('/buku/{buku}/hapus', [BukuController::class, 'destroy'])->name('buku.hapus.get');
 // });
-        Route::delete('/buku/{buku}', [BukuController::class, 'destroy'])->name('buku.destroy');
+        Route::delete('/buku/{buku}', [\App\Http\Controllers\Api\BukuController::class, 'destroy'])->name('buku.destroy');
         // // ROUTE CELAH A3: Menghapus buku via GET
         // Route::get('/buku/{buku}/hapus', [BukuController::class, 'destroy']);
     });
@@ -103,7 +103,8 @@ Route::middleware(['auth'])->group(function () {
 Route::get('/kategori', function () {
     return response()->json(
         \App\Models\Kategori::query()
-            ->select('id', 'nama')
+            ->selectRaw('MIN(id) as id, nama')
+            ->groupBy('nama')
             ->orderBy('nama')
             ->get()
     );
