@@ -76,20 +76,20 @@ class BukuController extends Controller
     }
 
     // Menghapus buku
-    public function destroy(string $id)
+    public function destroy($id)
     {
-        $buku = Buku::find($id);
+        $buku = \App\Models\Buku::findOrFail($id);
 
-        if (!$buku) {
+        try {
+            $buku->delete();
+
             return response()->json([
-                'message' => 'Buku tidak ditemukan.'
-            ], 404);
+                'message' => 'Buku berhasil dihapus.'
+            ]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            return response()->json([
+                'message' => 'Buku ini tidak dapat dihapus karena masih memiliki riwayat peminjaman.'
+            ], 422);
         }
-
-        $buku->delete();
-
-        return response()->json([
-            'message' => 'Buku berhasil dihapus.'
-        ], 200);
     }
 }
