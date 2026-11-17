@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Buku;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\QueryException;
 
 class BukuController extends Controller
 {
@@ -38,11 +39,30 @@ class BukuController extends Controller
     /**
      * Perbaikan A3 (Soal 2c): Menghapus data buku via route DELETE
      */
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         $buku = Buku::findOrFail($id);
-        $buku->delete();
 
-        return redirect()->route('buku.index')->with('success', 'Buku berhasil dihapus!');
+        try {
+            $buku->delete();
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Buku berhasil dihapus.'
+                ]);
+            }
+
+            return redirect()->route('buku.index')->with('success', 'Buku berhasil dihapus!');
+        } catch (QueryException $e) {
+            $pesanError = 'Buku ini tidak dapat dihapus karena masih memiliki riwayat peminjaman.';
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => $pesanError
+                ], 422);
+            }
+
+            return redirect()->route('buku.index')->with('error', $pesanError);
+        }
     }
 }
