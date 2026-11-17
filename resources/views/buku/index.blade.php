@@ -5,11 +5,12 @@
 @section('content')
 <style>
     .library-page {
-        max-width: 1200px;
+        max-width: 1100px;
         margin: 35px auto;
         padding: 25px;
         color: #493728;
         font-family: 'Poppins', Arial, sans-serif;
+        box-sizing: border-box;
     }
 
     .library-header {
@@ -45,6 +46,8 @@
         padding: 24px;
         margin-bottom: 25px;
         box-shadow: 0 5px 18px rgba(91, 65, 39, 0.06);
+        box-sizing: border-box;
+        width: 100%;
     }
 
     .form-title {
@@ -74,7 +77,7 @@
     .form-group input,
     .form-group select {
         width: 100%;
-        height: 57px;
+        height: 52px;
         box-sizing: border-box;
         padding: 0 16px;
         border: 1px solid #e3cdb5;
@@ -202,25 +205,26 @@
     .book-table {
         width: 100%;
         border-collapse: collapse;
-        min-width: 1000px;
+        table-layout: auto;
     }
 
     .book-table th {
         background: #f2e8d9;
         color: #654a32;
         text-align: left;
-        padding: 15px 13px;
+        padding: 13px 12px;
         font-size: 13px;
         font-weight: 600;
         white-space: nowrap;
     }
 
     .book-table td {
-        padding: 13px;
+        padding: 12px;
         border-bottom: 1px solid #eee5d9;
         font-size: 13px;
         color: #5f5043;
         vertical-align: middle;
+        word-break: break-word;
     }
 
     .book-table tbody tr:hover {
@@ -231,7 +235,7 @@
         display: inline-block;
         background: #eee2d0;
         color: #765638;
-        padding: 6px 10px;
+        padding: 5px 10px;
         border-radius: 20px;
         font-size: 12px;
         white-space: nowrap;
@@ -244,7 +248,7 @@
     }
 
     .action-buttons .btn {
-        padding: 8px 10px;
+        padding: 7px 10px;
         font-size: 12px;
     }
 
@@ -254,7 +258,7 @@
         color: #8b7865 !important;
     }
 
-    @media (max-width: 600px) {
+    @media (max-width: 768px) {
         .library-page {
             padding: 15px;
             margin: 20px auto;
@@ -287,20 +291,12 @@
         </div>
 
         <div>
-            {{-- Tombol Tambah Buku hanya muncul untuk Admin & Petugas --}}
-            @can('kelola-buku')
-                <a href="{{ route('buku.create') }}" class="btn btn-primary me-2">
-                    + Tambah Buku
-                </a>
-            @endcan
-
             <button type="button" class="btn btn-refresh" id="btnRefresh">
                 ↻ Muat Ulang
             </button>
         </div>
     </div>
 
-    
     {{-- Form Tambah dan Ubah Buku HANYA TAMPIL untuk Admin & Petugas --}}
     @hasanyrole('admin|petugas')
     <div class="library-card">
@@ -358,6 +354,10 @@
                 Pilih kategori yang tersedia sebelum menyimpan buku.
             </p>
 
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary" id="btnSimpan">
+                    + Tambah Buku
+                </button>
                 <button type="reset" class="btn btn-secondary" id="btnKosongkan">
                     Kosongkan Formulir
                 </button>
@@ -376,40 +376,61 @@
             <table class="book-table">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Kategori</th>
+                        <th style="width: 50px;">ID</th>
+                        <th style="width: 160px;">Kategori</th>
                         <th>Judul Buku</th>
                         <th>Penulis</th>
-                        <th>Tahun Terbit</th>
-                        <th>Aksi</th>
+                        <th style="width: 110px;">Tahun Terbit</th>
+                        <th style="width: 180px;">Aksi</th>
                     </tr>
                 </thead>
-                
-        <tbody id="daftarBuku">
-    @foreach($buku as $item)
-        <tr>
-            <td>{{ $item->id }}</td>
-            <td>{{ $item->kategori->nama ?? '-' }}</td>
-            
-            {{-- Perbaikan A1 (Aman XSS): Menggunakan {{ }} untuk escaping otomatis --}}
-            <td>{{ $item->judul }}</td>
-            
-            <td>{{ $item->penulis }}</td>
-            <td>{{ $item->tahun_terbit }}</td>
-            <td>
-                {{-- Perbaikan A3: Tombol Hapus menggunakan Form ber-token CSRF & Method DELETE --}}
-                <form action="{{ route('buku.destroy', $item->id) }}" method="POST" style="display:inline;">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Yakin hapus?')">
-                        Hapus
-                    </button>
-                </form>
-            </td>
-        </tr>
-  @endforeach
-</tbody>
-</table>
+                <tbody id="daftarBuku">
+                    @forelse($buku as $item)
+                        <tr>
+                            <td>{{ $item->id }}</td>
+                            <td>
+                                <span class="category-badge">
+                                    {{ $item->kategori->nama ?? '-' }}
+                                </span>
+                            </td>
+                            <td>{{ $item->judul }}</td>
+                            <td>{{ $item->penulis }}</td>
+                            <td>{{ $item->tahun_terbit }}</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a href="{{ route('buku.show', $item->id) }}" class="btn btn-detail">
+                                        Detail
+                                    </a>
+
+                                    @if(!(auth()->check() && auth()->user()->hasRole('siswa')))
+                                        <button
+                                            type="button"
+                                            class="btn btn-edit"
+                                            onclick='pilihBuku(@json($item))'
+                                        >
+                                            Ubah
+                                        </button>
+
+                                        <form action="{{ route('buku.destroy', $item->id) }}" method="POST" style="display:inline;">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-delete" onclick="return confirm('Yakin hapus buku ini?')">
+                                                Hapus
+                                            </button>
+                                        </form>
+                                    @endif
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="status-message">Belum ada data buku.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -523,15 +544,6 @@
     }
 
     async function muatBuku() {
-        daftarBuku.replaceChildren();
-
-        const barisMemuat = document.createElement('tr');
-        const selMemuat = buatSel('Memuat data buku...');
-        selMemuat.colSpan = 6;
-        selMemuat.className = 'status-message';
-        barisMemuat.appendChild(selMemuat);
-        daftarBuku.appendChild(barisMemuat);
-
         try {
             const response = await fetch('/api/buku', {
                 headers: {
@@ -539,6 +551,8 @@
                 },
                 cache: 'no-store'
             });
+
+            if (!response.ok) return;
 
             const hasil = await bacaRespons(response);
 
@@ -590,7 +604,6 @@
                 const grup = document.createElement('div');
                 grup.className = 'action-buttons';
 
-                // Tombol Detail (Dapat diakses Siswa, Admin, & Guru)
                 const btnDetail = document.createElement('button');
                 btnDetail.type = 'button';
                 btnDetail.className = 'btn btn-detail';
@@ -600,7 +613,6 @@
                 });
                 grup.appendChild(btnDetail);
 
-                // Jika BUKAN Siswa (yaitu Admin/Guru), tampilkan tombol Ubah dan Hapus
                 if (!isUserSiswa) {
                     const btnEdit = document.createElement('button');
                     btnEdit.type = 'button';
@@ -623,14 +635,7 @@
                 daftarBuku.appendChild(tr);
             });
         } catch (error) {
-            const barisError = document.createElement('tr');
-            const selError = buatSel(error.message);
-            selError.colSpan = 6;
-            selError.className = 'status-message';
-            barisError.appendChild(selError);
-            daftarBuku.replaceChildren(barisError);
-
-            tampilkanPesan(pesanTabel, error.message, 'error');
+            // Biarkan tabel bawaan Blade tetap tampil jika endpoint API tidak tersedia
         }
     }
 
@@ -648,7 +653,7 @@
             item.tahun_terbit ?? item.tahun ?? '';
 
         judulForm.textContent = 'Ubah Data Buku';
-        btnSimpan.textContent = 'Simpan Perubahan';
+        if (btnSimpan) btnSimpan.textContent = 'Simpan Perubahan';
 
         sembunyikanPesan(pesanForm);
 
@@ -674,8 +679,10 @@
                 return;
             }
 
-            btnSimpan.disabled = true;
-            btnSimpan.textContent = 'Menyimpan...';
+            if (btnSimpan) {
+                btnSimpan.disabled = true;
+                btnSimpan.textContent = 'Menyimpan...';
+            }
 
             const dataBuku = {
                 kategori_id: Number(pilihanKategori.value),
@@ -720,17 +727,19 @@
             } catch (error) {
                 tampilkanPesan(pesanForm, error.message, 'error');
             } finally {
-                btnSimpan.disabled = false;
-                btnSimpan.textContent = idBukuDiubah !== null
-                    ? 'Simpan Perubahan'
-                    : '+ Tambah Buku';
+                if (btnSimpan) {
+                    btnSimpan.disabled = false;
+                    btnSimpan.textContent = idBukuDiubah !== null
+                        ? 'Simpan Perubahan'
+                        : '+ Tambah Buku';
+                }
             }
         });
 
         btnKosongkan.addEventListener('click', function() {
             idBukuDiubah = null;
             judulForm.textContent = 'Tambah Buku Baru';
-            btnSimpan.textContent = '+ Tambah Buku';
+            if (btnSimpan) btnSimpan.textContent = '+ Tambah Buku';
             sembunyikanPesan(pesanForm);
         });
     }
@@ -762,7 +771,7 @@
                 formBuku.reset();
                 idBukuDiubah = null;
                 judulForm.textContent = 'Tambah Buku Baru';
-                btnSimpan.textContent = '+ Tambah Buku';
+                if (btnSimpan) btnSimpan.textContent = '+ Tambah Buku';
             }
 
             tampilkanPesan(
