@@ -12,7 +12,7 @@ Route::get('/kategori', function () {
             ->orderBy('nama')
             ->get()
     );
-})->name('kategori');
+});
 
 Route::name('api.')->group(function () {
     Route::apiResource('buku', BukuController::class);
