@@ -99,6 +99,16 @@ Route::middleware(['auth'])->group(function () {
 
 }); // Penutup Route::middleware(['auth'])
 
+// Fallback endpoint API untuk Vercel (tanpa mengubah nama route lain)
+Route::get('/kategori', function () {
+    return response()->json(
+        \App\Models\Kategori::query()
+            ->select('id', 'nama')
+            ->orderBy('nama')
+            ->get()
+    );
+});
+
 Route::get('/tes-error', function () {
     abort(500, 'Tes Error Aplikasi');
 });

@@ -358,11 +358,6 @@
                 Pilih kategori yang tersedia sebelum menyimpan buku.
             </p>
 
-            <div class="form-actions">
-                <button type="submit" class="btn btn-primary" id="btnSimpan">
-                    + Tambah Buku
-                </button>
-
                 <button type="reset" class="btn btn-secondary" id="btnKosongkan">
                     Kosongkan Formulir
                 </button>
