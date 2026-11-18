@@ -80,6 +80,27 @@
         .btn-earthy:hover {
             background-color: #654a32 !important;
         }
+
+        .register-prompt {
+            margin-top: 18px;
+            padding-top: 14px;
+            border-top: 1px solid #f0e4d6;
+            text-align: center;
+            font-size: 13px;
+            color: #8b7865;
+        }
+
+        .register-link {
+            color: #654a32 !important;
+            font-weight: 600;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .register-link:hover {
+            text-decoration: underline;
+            color: #493728 !important;
+        }
     </style>
 
     <div class="login-card-container">
@@ -130,6 +151,15 @@
                     {{ __('Log in') }}
                 </button>
             </div>
+
+            @if (Route::has('register'))
+                <div class="register-prompt">
+                    Belum punya akun?
+                    <a href="{{ route('register') }}" class="register-link">
+                        Daftar Akun
+                    </a>
+                </div>
+            @endif
         </form>
     </div>
 </x-guest-layout>
